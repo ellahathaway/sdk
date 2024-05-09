@@ -52,13 +52,3 @@ index ------------
  ./sdk/x.y.z/Microsoft.Common.CrossTargeting.targets
  ./sdk/x.y.z/Microsoft.Common.CurrentVersion.targets
  ./sdk/x.y.z/Microsoft.Common.overridetasks
-@@ ------------ @@
- ./shared/Microsoft.NETCore.App/x.y.z/WindowsBase.dll
- ./templates/
- ./templates/x.y.z/
--./templates/x.y.z/microsoft.dotnet.common.itemtemplates.x.y.z.nupkg
--./templates/x.y.z/microsoft.dotnet.common.projecttemplates.x.y.z.nupkg
-+./templates/x.y.z/Microsoft.DotNet.Common.ProjectTemplates.x.y.z.nupkg
- ./templates/x.y.z/microsoft.dotnet.test.projecttemplates.x.y.z.nupkg
- ./templates/x.y.z/microsoft.dotnet.web.itemtemplates.x.y.z.nupkg
- ./templates/x.y.z/microsoft.dotnet.web.projecttemplates.x.y.z.nupkg
