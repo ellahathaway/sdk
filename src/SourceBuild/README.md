@@ -16,3 +16,5 @@ When making changes to the source build infrastructure, devs would typically mak
 changes in a local clone of [dotnet/dotnet](https://github.com/dotnet/dotnet). Once complete
 you would copy the changed files here and make a PR. To validate the end to end experience, you
 can synchronize the VMR with any changes made here by running [eng/vmr-sync.sh](https://github.com/dotnet/sdk/blob/main/eng/vmr-sync.sh).
+
+Making a change for PR testing
