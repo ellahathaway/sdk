@@ -23,6 +23,22 @@ src/arcade/src/Microsoft.DotNet.Arcade.Sdk/tools/Licenses/*
 src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix/eula.rtf
 
 #
+# aspnetcore
+#
+
+# A generic statement about license applicability that is being detected as "unknown"
+src/aspnetcore/src/Components/THIRD-PARTY-NOTICES.txt|unknown
+src/aspnetcore/THIRD-PARTY-NOTICES.txt|unknown
+
+# Windows installer files that have a reference to a URL for license
+src/aspnetcore/src/Installers/Windows/**/*.wxl|unknown-license-reference
+src/aspnetcore/src/Installers/Windows/**/*.wxs|unknown-license-reference
+
+# License reference used in configuration, but not applying to code
+src/aspnetcore/src/Mvc/Settings.StyleCop|unknown-license-reference
+src/aspnetcore/src/submodules/MessagePack-CSharp/stylecop.json|unknown
+
+#
 # command-line-api
 #
 
@@ -99,6 +115,11 @@ src/nuget-client/test/TestExtensions/GenerateLicenseList/Program.cs|json
 src/nuget-client/test/**/resources/*.json
 src/nuget-client/test/**/resources/*.xml
 src/nuget-client/test/NuGet.Clients.Tests/NuGet.PackageManagement.UI.Test/PackageLicenseUtilitiesTests.cs
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/DefaultManifestValuesRuleTests.cs
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/LicenseExpressionTokenizerTests.cs
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/NuGetLicenseExpressionParserTests.cs
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/NuGetLicenseTests.cs
+src/nuget-client/test/TestUtilities/Test.Utility/JsonData.cs
 
 #
 # roslyn-analyzers
