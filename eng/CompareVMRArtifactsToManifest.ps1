@@ -64,12 +64,34 @@ function Get-ModifiedBlobPath {
     }
     return $newString
 }
+
+# Function to add matched file info to XML
+function Add-MatchedFileToXml {
+    param (
+        [string]$filename,
+        [string]$vmrPath,
+        [string]$msftPath,
+        [string]$fileExtension
+    )
+    $fileElement = $xmlOutput.CreateElement("File")
+    $fileElement.SetAttribute("Filename", $filename)
+    $fileElement.SetAttribute("VmrPath", $vmrPath)
+    $fileElement.SetAttribute("MsftPath", $msftPath)
+    $root.AppendChild($fileElement) | Out-Null
+}
+
 $missingPackagesShipping = @()
 $missingPackagesNonShipping = @()
 $missingBlobsShipping = @()
 $missingBlobsNonShipping = @()
 $misclassifiedBlobsVmrShipping = @()
 $misclassifiedBlobsVmrNonShipping = @()
+
+# Create an XML document
+$xmlOutput = New-Object System.Xml.XmlDocument
+$root = $xmlOutput.CreateElement("MatchedFiles")
+$xmlOutput.AppendChild($root)
+
 # Iterate through each file in the assets folder
 foreach ($file in $allFiles) {
     $foundMatchPackage = $false
@@ -97,6 +119,7 @@ foreach ($file in $allFiles) {
                 # If all conditions are met, print the match and the corresponding file
                 if ($repoOriginFolder) {
                     $foundMatchPackage = $true
+                    Add-MatchedFileToXml -filename $file.Name -vmrPath $file.FullName -msftPath $package.RepoOrigin
                     break
                 }
             }
@@ -138,6 +161,7 @@ foreach ($file in $allFiles) {
             $packageOnDisk = $file.FullName -replace '\\+', '/'
             if ($packageOnDisk -match $expectedLocation) {
                 $foundMatchBlob = $true
+                Add-MatchedFileToXml -filename $file.Name -vmrPath $file.FullName -msftPath $blob.RepoOrigin
                 break
             } elseif ($packageOnDisk -match $unexpectedLocation) {
                 if ($blob.DotNetReleaseShipping -eq "true")
@@ -150,6 +174,7 @@ foreach ($file in $allFiles) {
                 }
                 # Write-Host "$packageOnDisk is in $shippingWrong but should be in $shippingExpected"
                 $foundMatchBlob = $true
+                Add-MatchedFileToXml -filename $file.Name -vmrPath $file.FullName -msftPath $blob.RepoOrigin
                 break
             }
         }
@@ -167,6 +192,7 @@ foreach ($file in $allFiles) {
 
 New-Item -ItemType Directory -Force -Path $outputFilePath
 
+$xmlOutput.Save("$outputFilePath/MatchedFiles.xml")
 $missingPackagesShipping | ForEach-Object { Add-Content -Path "$outputFilePath/MissingShippingPackages.txt" -Value $_ }
 $missingPackagesNonShipping | ForEach-Object { Add-Content -Path "$outputFilePath/MissingNonShippingPackages.txt" -Value $_ }
 $missingBlobsShipping | ForEach-Object { Add-Content -Path "$outputFilePath/MissingShippingBlobs.txt" -Value $_ }

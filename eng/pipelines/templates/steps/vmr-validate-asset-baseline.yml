@@ -35,3 +35,44 @@ steps:
     artifactName: AssetBaselineFiles
     artifactType: Container
     parallel: true
+
+# The following tasks are needed for the comparison
+# of signing status between MSFT and VMR files.
+- task: PowerShell@2
+  displayName: Prepare Matching Artifacts for SignCheck
+  inputs:
+    targetType: 'inline'
+    script: |
+      $outputDirectory = "$(Build.ArtifactStagingDirectory)\SignCheckAssetComparison"
+      $vmrOutputDirectory = "$outputDirectory\Vmr"
+      $msftOutputDirectory = "$outputDirectory\Msft"
+
+      # Create the output directories
+      New-Item -ItemType Directory -Path $vmrOutputDirectory -Force
+      New-Item -ItemType Directory -Path $msftOutputDirectory -Force
+
+      # Iterate through the XML file and copy the files to the respective directories
+      $xmlFilePath = "$(Build.SourcesDirectory)\artifacts\AssetBaselines\MatchingFiles.xml"
+      [xml]$xmlContent = Get-Content -Path $xmlFilePath
+      foreach ($file in $xmlContent.MatchingFiles.File) {
+          $vmrFilePath = $file.VmrPath
+          $msftFilePath = $file.MsftPath
+          $fileName = $file.Filename
+
+          # Copy the VMR file to the VMR directory
+          $destinationVmrPath = Join-Path -Path $vmrOutputDirectory -ChildPath $file.Name
+          Copy-Item -Path $file.VmrPath -Destination $destinationVmrPath -Force
+          
+          # Copy the MSFT file to the MSFT directory
+          $destinationMsftPath = Join-Path -Path $msftOutputDirectory -ChildPath $file.Name
+          Copy-Item -Path $file.MsftPath -Destination $destinationMsftPath -Force
+      }
+      Write-Host "Files copied to $vmrOutputDirectory and $msftOutputDirectory"
+
+- task: 1ES.PublishPipelineArtifact@1
+  displayName: Publish Artifacts for SignCheck
+  inputs:
+    path: $(Build.ArtifactStagingDirectory)\SignCheckAssetComparison
+    artifactName: SignCheckAssetComparison
+    artifactType: Container
+    parallel: true

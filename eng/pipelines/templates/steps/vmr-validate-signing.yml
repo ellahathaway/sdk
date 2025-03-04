@@ -2,9 +2,25 @@ parameters:
 - name: artifactName
   type: string
 
+- name: itemPatterns
+  type: string
+  default: "**"
+
 - name: continueOnError
   type: boolean
   default: false
+
+- name: skipAuthentication
+  type: boolean
+  default: false
+
+- name: logPath
+  type: string
+  default: ''
+
+- name: displayName
+  type: string
+  default: Validate Signing
 
 - name: OS
   type: string
@@ -17,6 +33,7 @@ steps:
 - task: DownloadBuildArtifacts@1
   inputs:
     artifactName: ${{ parameters.artifactName }}
+    itemPatterns: ${{ parameters.artifactPatterns }}
     downloadPath: $(Build.ArtifactStagingDirectory)
     checkDownloadedFiles: true
   displayName: Download Artifacts
@@ -24,8 +41,9 @@ steps:
 # This is necessary whenever we want to publish/restore to an AzDO private feed
 # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
 # otherwise it'll complain about accessing a private feed.
-- task: NuGetAuthenticate@1
-  displayName: 'Authenticate to AzDO Feeds'
+- ${{ if eq(parameters.skipAuthentication, false) }}:
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate to AzDO Feeds'
 
 - ${{ if eq(parameters.OS, 'Windows_NT') }}:
   - task: PowerShell@2
@@ -33,7 +51,8 @@ steps:
       filePath: eng\common\sdk-task.ps1
       arguments: -task SigningValidation -restore -msbuildEngine vs
         /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
-    displayName: Validate Signing of Packages
+        /p:LogPath='${{ parameters.logPath }}'
+    displayName: ${{ parameters.displayName }}
     continueOnError: ${{ parameters.continueOnError }}
 
 - ${{ else }}:
@@ -42,5 +61,6 @@ steps:
       filePath: eng/common/sdk-task.sh
       arguments: --task SigningValidation --restore
         /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
-    displayName: Validate - ${{ parameters.OS }}
+        /p:LogPath='${{ parameters.logPath }}'
+    displayName: ${{ parameters.displayName }}
     continueOnError: ${{ parameters.continueOnError }}

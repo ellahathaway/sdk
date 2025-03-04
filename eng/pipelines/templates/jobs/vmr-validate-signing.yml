@@ -1,0 +1,87 @@
+parameters:
+- name: continueOnError
+  type: boolean
+  default: false
+
+- name: OS
+  type: string
+  values:
+    - Windows_NT
+    - Linux
+    - Darwin
+
+- name: pool
+  type: object
+
+- name: artifactName
+  type: string
+
+- name: dependsOn
+  type: string
+  default: ''
+
+# Internal parameters not intended to be set by the user
+# Remove these parameters when the comparison is no longer needed
+- name: MsftLogPath
+  type: string
+  default: $(Build.ArtifactStagingDirectory)/MsftSignCheck.log
+
+- name: VmrLogPath
+  type: string
+  default: $(Build.ArtifactStagingDirectory)/VmrSignCheck.log
+
+- name: ArtifactsComparisonName
+  type: string
+  default: SignCheckAssetComparison
+
+jobs:
+- job:
+    pool: ${{ parameters.pool }}
+    displayName: Validate Signing - ${{ parameters.OS }}
+    timeoutInMinutes: 240
+    dependsOn: ${{ parameters.dependsOn }}
+    steps:
+    # Validate the signing for default artifacts
+    - template: ../steps/vmr-validate-signing.yml
+      parameters:
+        artifactName: ${{ parameters.artifactName }}
+        continueOnError: ${{ parameters.continueOnError }}
+        OS: ${{ parameters.OS }}
+        displayName: Validate signing for default VMR artifacts
+
+    # Compare the signing status of MSFT and VMR files
+    # MSFT files
+    - template: ../steps/vmr-validate-signing.yml
+      parameters:
+        artifactName: ${{ parameters.ArtifactsComparisonName }}
+        DownloadBuildArtifacts: "**/Msft/**"
+        continueOnError: ${{ parameters.continueOnError }}
+        OS: ${{ parameters.OS }}
+        logPath: ${{ parameters.MsftLogPath }}
+        skipAuthentication: true
+        displayName: Validate signing for asset comparison - MSFT
+    
+    # VMR files
+    - template: ../steps/vmr-validate-signing.yml
+      parameters:
+        artifactName: ${{ parameters.ArtifactsComparisonName }}
+        DownloadBuildArtifacts: "**/Vmr/**"
+        continueOnError: ${{ parameters.continueOnError }}
+        OS: ${{ parameters.OS }}
+        logPath: ${{ parameters.VmrLogPath }}
+        skipAuthentication: true
+        displayName: Validate signing for asset comparison - VMR
+
+    - task: script@2
+      displayName: Compare Signed Assets
+      inputs:
+        scriptSource: 'inline'
+        script: |
+          git diff --no-index ${{ parameters.MsftLogPath }} ${{ parameters.VmrLogPath }} > $(Build.ArtifactStagingDirectory)/SigningComparison.diff
+          if ($LASTEXITCODE -ne 0) {
+              cat $(Build.ArtifactStagingDirectory)/SigningComparison.diff
+              Write-Host "##vso[task.logissue type=error]The signing status of the MSFT and VMR files do not match. Please check the SigningComparison.diff file for details."
+              exit 1
+          } else {
+              Write-Host "The signing status of the MSFT and VMR files match."
+          }
