@@ -22,13 +22,13 @@ parameters:
 
 # Internal parameters not intended to be set by the user
 # Remove these parameters when the comparison is no longer needed
-- name: MsftLogPath
+- name: MsftResultsXmlPath
   type: string
-  default: $(Build.ArtifactStagingDirectory)/MsftSignCheck.log
+  default: $(Build.ArtifactStagingDirectory)/MsftSignCheck.xml
 
-- name: VmrLogPath
+- name: VmrResultsXmlPath
   type: string
-  default: $(Build.ArtifactStagingDirectory)/VmrSignCheck.log
+  default: $(Build.ArtifactStagingDirectory)/VmrSignCheck.xml
 
 - name: ArtifactsComparisonName
   type: string
@@ -57,7 +57,7 @@ jobs:
         DownloadBuildArtifacts: "**/Msft/**"
         continueOnError: ${{ parameters.continueOnError }}
         OS: ${{ parameters.OS }}
-        logPath: ${{ parameters.MsftLogPath }}
+        resultsXmlPath: ${{ parameters.MsftResultsXmlPath }}
         skipAuthentication: true
         displayName: Validate signing for asset comparison - MSFT
     
@@ -68,7 +68,7 @@ jobs:
         DownloadBuildArtifacts: "**/Vmr/**"
         continueOnError: ${{ parameters.continueOnError }}
         OS: ${{ parameters.OS }}
-        logPath: ${{ parameters.VmrLogPath }}
+        resultsXmlPath: ${{ parameters.VmrResultsXmlPath }}
         skipAuthentication: true
         displayName: Validate signing for asset comparison - VMR
 
@@ -77,7 +77,7 @@ jobs:
       inputs:
         scriptSource: 'inline'
         script: |
-          git diff --no-index ${{ parameters.MsftLogPath }} ${{ parameters.VmrLogPath }} > $(Build.ArtifactStagingDirectory)/SigningComparison.diff
+          git diff --no-index ${{ parameters.MsftResultsXmlPath }} ${{ parameters.VmrResultsXmlPath }} > $(Build.ArtifactStagingDirectory)/SigningComparison.diff
           if ($LASTEXITCODE -ne 0) {
               cat $(Build.ArtifactStagingDirectory)/SigningComparison.diff
               Write-Host "##vso[task.logissue type=error]The signing status of the MSFT and VMR files do not match. Please check the SigningComparison.diff file for details."

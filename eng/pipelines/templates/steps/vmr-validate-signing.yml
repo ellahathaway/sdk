@@ -14,7 +14,7 @@ parameters:
   type: boolean
   default: false
 
-- name: logPath
+- name: resultsXmlPath
   type: string
   default: ''
 
@@ -51,7 +51,7 @@ steps:
       filePath: eng\common\sdk-task.ps1
       arguments: -task SigningValidation -restore -msbuildEngine vs
         /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
-        /p:LogPath='${{ parameters.logPath }}'
+        /p:ResultsXmlPath='${{ parameters.resultsXmlPath }}'
     displayName: ${{ parameters.displayName }}
     continueOnError: ${{ parameters.continueOnError }}
 
@@ -61,6 +61,6 @@ steps:
       filePath: eng/common/sdk-task.sh
       arguments: --task SigningValidation --restore
         /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
-        /p:LogPath='${{ parameters.logPath }}'
+        /p:ResultsXmlPath='${{ parameters.resultsXmlPath }}'
     displayName: ${{ parameters.displayName }}
     continueOnError: ${{ parameters.continueOnError }}
